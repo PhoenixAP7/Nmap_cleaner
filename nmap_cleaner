@@ -1,0 +1,50 @@
+import re
+from collections import Counter
+
+def parse_nmap_output():
+    try:
+        # Prompt the user for the input .txt file
+        input_file = input("Enter the name of the input .txt file: ")
+
+        with open(input_file, 'r') as file:
+            data = file.read()
+
+        # Use regular expressions to extract relevant information
+        results = re.findall(r'Nmap scan report for (.*?)\n.*?(\d+\.\d+\.\d+\.\d+).*?(\d+)/\w+\s+\w+\s+([\w-]+)', data, re.DOTALL)
+
+        # Create a list to store all open ports
+        all_ports = []
+
+        # Prompt the user for the name of the newly created .txt file
+        output_file = input("Enter the name of the newly created .txt file: ")
+
+        # Write the extracted information to the output file
+        with open(output_file, 'w') as output:
+            for result in results:
+                hostname, ip, port, service = result
+
+                # Append the open port to the list
+                all_ports.append(int(port))
+
+                output.write(f'Nmap scan report for {ip}\n'
+                             f'Host is up, received user-set (0.0016s latency).\n'
+                             f'Scanned at 2023-10-02 14:07:04 +04 for 43s\n'
+                             f'Not shown: 994 closed tcp ports (reset)\n'
+                             f'PORT     STATE SERVICE  REASON\n'
+                             f'{port}/tcp   open  {service} syn-ack ttl 63\n\n')
+
+            # Count all the open ports and their occurrences
+            port_counts = Counter(all_ports)
+            output.write("List of all open ports and their counts:\n")
+            for port, count in port_counts.items():
+                output.write(f"Port {port}: Found {count} times\n")
+                output.write('\n')
+
+        print(f"Data extracted and saved to {output_file}")
+    except FileNotFoundError:
+        print("Input file not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    parse_nmap_output()
